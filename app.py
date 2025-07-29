@@ -39,19 +39,18 @@ def extract_text():
         return jsonify({"status": "error", "message": f"Cannot open PDF: {str(e)}"}), 500
 
     text_complete = ""
-page_count = 0
-for page in doc:
-    text_complete += page.get_text("text") + "\n"
-    page_count += 1
-doc.close()
+    page_count = 0
+    for page in doc:
+        text_complete += page.get_text("text") + "\n"
+        page_count += 1
+    doc.close()
 
-return jsonify({
-    "status": "success",
-    "pageCount": page_count,
-    "body": text_complete,
-    "url": ""
-})
-
+    return jsonify({
+        "status": "success",
+        "pageCount": page_count,
+        "body": text_complete,
+        "url": ""
+    })
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
