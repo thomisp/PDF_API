@@ -40,10 +40,11 @@ def extract_text():
 
     pages = []
     for i, page in enumerate(doc):
-        text = page.get_text() or ""
+        text = page.get_text("text") or ""  
         pages.append({"page": i, "text": text})
-    page_count = len(pages)
     doc.close()
+    page_count = len(pages)
+
 
     # 4) Responder igual que PDF.co
     return jsonify({
