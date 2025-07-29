@@ -38,21 +38,20 @@ def extract_text():
     except Exception as e:
         return jsonify({"status": "error", "message": f"Cannot open PDF: {str(e)}"}), 500
 
-    pages = []
-    for i, page in enumerate(doc):
-        text = page.get_text("text") or ""  
-        pages.append({"page": i, "text": text})
-    doc.close()
-    page_count = len(pages)
+    text_complete = ""
+page_count = 0
+for page in doc:
+    text_complete += page.get_text("text") + "\n"
+    page_count += 1
+doc.close()
 
+return jsonify({
+    "status": "success",
+    "pageCount": page_count,
+    "body": text_complete,
+    "url": ""
+})
 
-    # 4) Responder igual que PDF.co
-    return jsonify({
-        "status": "success",
-        "pageCount": page_count,
-        "body": pages,
-        "url": ""
-    })
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
