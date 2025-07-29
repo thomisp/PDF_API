@@ -10,4 +10,4 @@ COPY . /app
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
-CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:$PORT"]
+CMD ["sh", "-c", "gunicorn app:app --bind 0.0.0.0:$PORT"]
