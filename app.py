@@ -1,10 +1,9 @@
 import os
 import uuid
-import fitz  # PyMuPDF
+import subprocess
 from flask import Flask, request, jsonify
 from werkzeug.utils import secure_filename
 
-# Carga la API Key de la variable de entorno
 API_KEY = os.getenv("API_KEY")
 
 app = Flask(__name__)
@@ -13,16 +12,14 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 @app.route("/")
 def home():
-    return "API estilo PDF.co activa"
+    return "API estilo PDF.co (con pdftotext)"
 
 @app.route("/v1/pdf/extract/text", methods=["POST"])
 def extract_text():
-    # 1) Verificar API Key
     user_key = request.headers.get("x-api-key")
     if not user_key or user_key != API_KEY:
         return jsonify({"status": "error", "message": "Invalid or missing API key"}), 403
 
-    # 2) Validación de archivo
     if 'file' not in request.files:
         return jsonify({"status": "error", "message": "No file uploaded"}), 400
 
@@ -32,23 +29,18 @@ def extract_text():
     filepath = os.path.join(UPLOAD_FOLDER, unique_name)
     file.save(filepath)
 
-    # 3) Extraer texto
+    txt_path = filepath + ".txt"
     try:
-        doc = fitz.open(filepath)
+        subprocess.run(["pdftotext", "-layout", filepath, txt_path], check=True)
+        with open(txt_path, "r", encoding="utf-8") as f:
+            text = f.read()
     except Exception as e:
-        return jsonify({"status": "error", "message": f"Cannot open PDF: {str(e)}"}), 500
-
-    text_complete = ""
-    page_count = 0
-    for page in doc:
-        text_complete += page.get_text("text") + "\n"
-        page_count += 1
-    doc.close()
+        return jsonify({"status": "error", "message": f"Error extrayendo texto: {str(e)}"}), 500
 
     return jsonify({
         "status": "success",
-        "pageCount": page_count,
-        "body": text_complete,
+        "pageCount": 1,
+        "body": text,
         "url": ""
     })
 
